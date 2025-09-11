@@ -37,6 +37,12 @@ export interface ContentBlock {
     };
     processedAt: string;
   };
+  // Social media fields (for social_links section)
+  email?: string;
+  facebook?: string;
+  instagram?: string;
+  tiktok?: string;
+  donation_link?: string;
   created_at: string;
   updated_at: string;
 }
