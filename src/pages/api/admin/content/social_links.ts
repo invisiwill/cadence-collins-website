@@ -31,7 +31,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const { data: existingData } = await supabase
       .from('content_blocks')
       .select('id')
-      .eq('section', 'social_links')
+      .eq('section_key', 'social_links')
       .single();
 
     let result;
@@ -44,7 +44,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           content,
           updated_at: new Date().toISOString()
         })
-        .eq('section', 'social_links')
+        .eq('section_key', 'social_links')
         .select()
         .single();
 
@@ -57,7 +57,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const { data, error } = await supabase
         .from('content_blocks')
         .insert({
-          section: 'social_links',
+          section_key: 'social_links',
           title,
           content,
           created_at: new Date().toISOString(),

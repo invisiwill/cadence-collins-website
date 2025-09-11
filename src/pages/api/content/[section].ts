@@ -37,6 +37,28 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
     }
 
+    // For social_links, parse the JSON content and merge it with the base data
+    if (sectionKey === 'social_links' && data.content) {
+      try {
+        const socialData = JSON.parse(data.content);
+        return res.status(200).json({
+          ...data,
+          ...socialData
+        });
+      } catch (parseError) {
+        console.error('Failed to parse social_links content:', parseError);
+        // Fallback to default structure if parsing fails
+        return res.status(200).json({
+          ...data,
+          email: 'cadenceforschoolboard@gmail.com',
+          tiktok: 'https://tiktok.com/@cadenceoxoxo',
+          facebook: 'https://www.facebook.com/profile.php?id=61578333433751',
+          instagram: 'https://instagram.com/cadence.collins.cares',
+          donation_link: 'https://secure.actblue.com/donate/cadence-collins-cares'
+        });
+      }
+    }
+
     return res.status(200).json(data);
   } catch (error) {
     console.error('API error:', error);

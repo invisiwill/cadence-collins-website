@@ -14,17 +14,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       if (error) {
         if (error.code === 'PGRST116') {
           // No data found, return default social links
-          const defaultSocialLinks: ContentBlock = {
+          return res.status(200).json({
             id: '',
             section_key: 'social_links',
             title: 'Connect With Us',
-            content: JSON.stringify({
-              email: 'cadenceforschoolboard@gmail.com',
-              facebook: 'https://www.facebook.com/profile.php?id=61578333433751',
-              instagram: 'https://instagram.com/cadence.collins.cares',
-              tiktok: 'https://tiktok.com/@cadenceoxoxo',
-              donation: 'https://secure.actblue.com/donate/cadence-collins-cares'
-            }),
+            content: '',
+            email: 'cadenceforschoolboard@gmail.com',
+            facebook: 'https://www.facebook.com/profile.php?id=61578333433751',
+            instagram: 'https://instagram.com/cadence.collins.cares',
+            tiktok: 'https://tiktok.com/@cadenceoxoxo',
+            donation_link: 'https://secure.actblue.com/donate/cadence-collins-cares',
             photo_large: undefined,
             photo_medium: undefined,
             photo_small: undefined,
@@ -32,13 +31,29 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             photo_alt: undefined,
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString()
-          };
-          return res.status(200).json(defaultSocialLinks);
+          });
         }
         return res.status(500).json({ message: 'Database error', error: error.message });
       }
 
-      res.status(200).json(data);
+      // Parse JSON content and merge with base data
+      try {
+        const parsedContent = JSON.parse(data.content || '{}');
+        res.status(200).json({
+          ...data,
+          ...parsedContent
+        });
+      } catch (parseError) {
+        // If JSON parsing fails, return default structure
+        res.status(200).json({
+          ...data,
+          email: 'cadenceforschoolboard@gmail.com',
+          facebook: 'https://www.facebook.com/profile.php?id=61578333433751',
+          instagram: 'https://instagram.com/cadence.collins.cares',
+          tiktok: 'https://tiktok.com/@cadenceoxoxo',
+          donation_link: 'https://secure.actblue.com/donate/cadence-collins-cares'
+        });
+      }
     } catch (error) {
       res.status(500).json({ message: 'Server error' });
     }

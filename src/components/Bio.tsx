@@ -34,7 +34,7 @@ export function Bio({ className = '' }: BioProps) {
 
   if (loading) {
     return (
-      <section id="about" className={`py-16 bg-gray-50 ${className}`}>
+      <section id="bio" className={`py-16 bg-gray-50 ${className}`}>
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="animate-pulse">
             <div className="h-8 bg-gray-300 rounded w-1/3 mb-6"></div>
@@ -51,7 +51,7 @@ export function Bio({ className = '' }: BioProps) {
 
   if (error) {
     return (
-      <section id="about" className={`py-16 bg-gray-50 ${className}`}>
+      <section id="bio" className={`py-16 bg-gray-50 ${className}`}>
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center text-red-600">
             <p>{error}</p>

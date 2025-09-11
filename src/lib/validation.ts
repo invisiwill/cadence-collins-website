@@ -43,7 +43,7 @@ export const contentSchema = z.object({
 });
 
 // Section key validation
-export const sectionKeySchema = z.enum(['bio', 'policy', 'contact', 'hero_intro']);
+export const sectionKeySchema = z.enum(['bio', 'policy', 'contact', 'hero_intro', 'social_links']);
 
 // Helper function to format validation errors for API responses
 export function formatValidationErrors(error: z.ZodError) {

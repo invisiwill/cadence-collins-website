@@ -9,24 +9,34 @@ interface HeroProps {
 
 export function Hero({ className = '' }: HeroProps) {
   const [heroContent, setHeroContent] = useState<ContentBlock | null>(null);
+  const [socialLinks, setSocialLinks] = useState<ContentBlock | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function fetchHeroContent() {
+    async function fetchContent() {
       try {
-        const response = await fetch('/api/content/hero_intro');
-        if (response.ok) {
-          const data = await response.json();
-          setHeroContent(data);
+        const [heroResponse, socialResponse] = await Promise.all([
+          fetch('/api/content/hero_intro'),
+          fetch('/api/content/social_links')
+        ]);
+
+        if (heroResponse.ok) {
+          const heroData = await heroResponse.json();
+          setHeroContent(heroData);
+        }
+
+        if (socialResponse.ok) {
+          const socialData = await socialResponse.json();
+          setSocialLinks(socialData);
         }
       } catch (err) {
-        console.error('Failed to load hero content');
+        console.error('Failed to load content');
       } finally {
         setLoading(false);
       }
     }
 
-    fetchHeroContent();
+    fetchContent();
   }, []);
 
   return (
@@ -79,6 +89,16 @@ export function Hero({ className = '' }: HeroProps) {
               >
                 Learn More
               </a>
+              {socialLinks?.donation_link && (
+                <a
+                  href={socialLinks.donation_link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-green-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-green-700 transition-colors"
+                >
+                  Donate
+                </a>
+              )}
             </div>
           </div>
         </div>
