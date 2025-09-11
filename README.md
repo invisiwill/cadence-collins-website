@@ -145,9 +145,18 @@ Following TDD principles:
 
 ### Vercel (Recommended)
 
-1. Connect your GitHub repository to Vercel
-2. Set environment variables in Vercel dashboard
-3. Deploy automatically on git push
+✅ **Automated CI/CD Setup Complete!**
+
+The repository now includes GitHub Actions workflow that automatically:
+- Runs tests and linting on every push
+- Deploys to Vercel production when code is merged to main
+- Creates preview deployments for pull requests
+
+**Live Sites:**
+- **Production**: https://ccwebsite-nnxqcw76e-williambridgesapploicoms-projects.vercel.app
+- **Admin Panel**: https://ccwebsite-nnxqcw76e-williambridgesapploicoms-projects.vercel.app/admin
+
+Environment variables are pre-configured on Vercel for all environments.
 
 ### Other Platforms
 
