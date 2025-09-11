@@ -1,0 +1,468 @@
+openapi: 3.0.3
+info:
+  title: Cadence Collins Campaign Website API
+  description: API for campaign website with mailing list and CMS functionality
+  version: 1.0.0
+  contact:
+    name: Campaign Website Support
+
+servers:
+  - url: https://localhost:3000/api
+    description: Development server
+  - url: https://cadence-collins.vercel.app/api  
+    description: Production server
+
+paths:
+  /mailing-list:
+    post:
+      summary: Subscribe to mailing list
+      description: Add new subscriber to campaign mailing list
+      tags: [Public]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MailingListSignup'
+      responses:
+        '201':
+          description: Successfully subscribed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubscriptionSuccess'
+        '400':
+          description: Invalid input data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+        '409':
+          description: Email already subscribed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConflictError'
+
+  /events:
+    get:
+      summary: Get published campaign events
+      description: Retrieve list of published upcoming events
+      tags: [Public]
+      parameters:
+        - name: limit
+          in: query
+          description: Maximum number of events to return
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+            default: 10
+      responses:
+        '200':
+          description: List of events
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PublicEvent'
+
+  /content/{section}:
+    get:
+      summary: Get content by section
+      description: Retrieve content block for specific section
+      tags: [Public]
+      parameters:
+        - name: section
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [bio, policy, contact]
+      responses:
+        '200':
+          description: Content block data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContentBlock'
+        '404':
+          description: Section not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundError'
+
+  # Admin endpoints (authenticated)
+  /admin/mailing-list:
+    get:
+      summary: Get all mailing list subscribers
+      description: Admin endpoint to retrieve subscriber list
+      tags: [Admin]
+      security:
+        - AdminAuth: []
+      parameters:
+        - name: format
+          in: query
+          description: Response format
+          schema:
+            type: string
+            enum: [json, csv]
+            default: json
+      responses:
+        '200':
+          description: Subscriber list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MailingListSubscriber'
+            text/csv:
+              schema:
+                type: string
+                example: "email,name,created_at\nuser@example.com,John Doe,2025-09-10T10:00:00Z"
+
+  /admin/events:
+    get:
+      summary: Get all events for admin
+      description: Admin endpoint to retrieve all events (published and unpublished)
+      tags: [Admin]
+      security:
+        - AdminAuth: []
+      responses:
+        '200':
+          description: All events
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AdminEvent'
+    post:
+      summary: Create new event
+      description: Admin endpoint to create campaign event
+      tags: [Admin]
+      security:
+        - AdminAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EventForm'
+      responses:
+        '201':
+          description: Event created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminEvent'
+        '400':
+          description: Invalid event data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+
+  /admin/events/{eventId}:
+    put:
+      summary: Update existing event
+      description: Admin endpoint to modify campaign event
+      tags: [Admin]
+      security:
+        - AdminAuth: []
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EventForm'
+      responses:
+        '200':
+          description: Event updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminEvent'
+        '404':
+          description: Event not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundError'
+    delete:
+      summary: Delete event
+      description: Admin endpoint to remove campaign event
+      tags: [Admin]
+      security:
+        - AdminAuth: []
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Event deleted successfully
+        '404':
+          description: Event not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundError'
+
+  /admin/content/{section}:
+    put:
+      summary: Update content block
+      description: Admin endpoint to modify section content
+      tags: [Admin]
+      security:
+        - AdminAuth: []
+      parameters:
+        - name: section
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [bio, policy, contact]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContentForm'
+      responses:
+        '200':
+          description: Content updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContentBlock'
+        '404':
+          description: Section not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundError'
+
+components:
+  schemas:
+    MailingListSignup:
+      type: object
+      required:
+        - email
+        - name
+      properties:
+        email:
+          type: string
+          format: email
+          maxLength: 255
+          example: "voter@example.com"
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+          example: "Jane Voter"
+
+    SubscriptionSuccess:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: "Successfully subscribed to mailing list"
+        subscriber_id:
+          type: string
+          format: uuid
+
+    ValidationError:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+          example: "Validation failed"
+        errors:
+          type: array
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+                example: "email"
+              message:
+                type: string
+                example: "Invalid email format"
+
+    ConflictError:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+          example: "Email address already subscribed"
+        error_code:
+          type: string
+          example: "EMAIL_EXISTS"
+
+    PublicEvent:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+          example: "Town Hall Meeting"
+        description:
+          type: string
+          example: "Join us for a community discussion about school board priorities"
+        date:
+          type: string
+          format: date-time
+          example: "2025-10-15T19:00:00Z"
+        location:
+          type: string
+          example: "Community Center, 123 Main St"
+
+    AdminEvent:
+      allOf:
+        - $ref: '#/components/schemas/PublicEvent'
+        - type: object
+          properties:
+            is_published:
+              type: boolean
+              example: true
+            created_at:
+              type: string
+              format: date-time
+            updated_at:
+              type: string
+              format: date-time
+
+    EventForm:
+      type: object
+      required:
+        - title
+        - description
+        - date
+        - location
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+          example: "Town Hall Meeting"
+        description:
+          type: string
+          minLength: 1
+          example: "Community discussion about school priorities"
+        date:
+          type: string
+          format: date-time
+          example: "2025-10-15T19:00:00Z"
+        location:
+          type: string
+          minLength: 1
+          maxLength: 300
+          example: "Community Center, 123 Main St"
+        is_published:
+          type: boolean
+          default: true
+
+    ContentBlock:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        section_key:
+          type: string
+          enum: [bio, policy, contact]
+        title:
+          type: string
+          example: "About Cadence"
+        content:
+          type: string
+          example: "Cadence Collins is a dedicated community member..."
+        updated_at:
+          type: string
+          format: date-time
+
+    ContentForm:
+      type: object
+      required:
+        - title
+        - content
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+          example: "About Cadence"
+        content:
+          type: string
+          minLength: 1
+          maxLength: 10000
+          example: "Cadence Collins is a dedicated community member..."
+
+    MailingListSubscriber:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        name:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        is_active:
+          type: boolean
+
+    NotFoundError:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+          example: "Resource not found"
+        error_code:
+          type: string
+          example: "NOT_FOUND"
+
+  securitySchemes:
+    AdminAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Admin authentication token
+
+tags:
+  - name: Public
+    description: Public endpoints for website visitors
+  - name: Admin
+    description: Administrative endpoints requiring authentication
