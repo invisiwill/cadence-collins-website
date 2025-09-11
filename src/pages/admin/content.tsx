@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { ContentBlock, ContentForm } from '@/types/database';
+import { ContentBlock, ContentForm, SocialLinksForm } from '@/types/database';
 import AdminLayout from '@/components/admin/AdminLayout';
 import { ImageUpload } from '@/components/ImageUpload';
 import { ProcessedImage } from '@/lib/imageProcessing';
@@ -58,7 +58,7 @@ export default function AdminContentPage({}: AdminContentPageProps) {
     handleSubmit: handleSubmitSocialLinks,
     setValue: setValueSocialLinks,
     formState: { errors: errorsSocialLinks },
-  } = useForm<ContentForm>();
+  } = useForm<SocialLinksForm>();
 
   useEffect(() => {
     fetchAllContent();
@@ -104,8 +104,22 @@ export default function AdminContentPage({}: AdminContentPageProps) {
             setValueContact('title', data.title);
             setValueContact('content', data.content);
           } else if (section === 'social_links') {
-            setValueSocialLinks('title', data.title);
-            setValueSocialLinks('content', data.content);
+            // Parse JSON content for social links
+            try {
+              const socialData = JSON.parse(data.content || '{}');
+              setValueSocialLinks('email', socialData.email || 'cadenceforschoolboard@gmail.com');
+              setValueSocialLinks('facebook', socialData.facebook || 'https://www.facebook.com/profile.php?id=61578333433751');
+              setValueSocialLinks('instagram', socialData.instagram || 'https://instagram.com/cadence.collins.cares');
+              setValueSocialLinks('tiktok', socialData.tiktok || 'https://tiktok.com/@cadenceoxoxo');
+              setValueSocialLinks('donation_link', socialData.donation_link || 'https://secure.actblue.com/donate/cadence-collins-cares');
+            } catch (e) {
+              // Set defaults if parsing fails
+              setValueSocialLinks('email', 'cadenceforschoolboard@gmail.com');
+              setValueSocialLinks('facebook', 'https://www.facebook.com/profile.php?id=61578333433751');
+              setValueSocialLinks('instagram', 'https://instagram.com/cadence.collins.cares');
+              setValueSocialLinks('tiktok', 'https://tiktok.com/@cadenceoxoxo');
+              setValueSocialLinks('donation_link', 'https://secure.actblue.com/donate/cadence-collins-cares');
+            }
           }
         }
       }
@@ -118,7 +132,7 @@ export default function AdminContentPage({}: AdminContentPageProps) {
     }
   };
 
-  const handleSaveContent = async (section: string, data: ContentForm) => {
+  const handleSaveContent = async (section: string, data: ContentForm | SocialLinksForm) => {
     setSaving(section);
     
     try {
@@ -129,16 +143,17 @@ export default function AdminContentPage({}: AdminContentPageProps) {
       
       if (section === 'social_links') {
         // For social links, convert individual fields to JSON content
+        const socialLinksData = data as SocialLinksForm;
         const socialData = {
-          email: (data as any).email || 'cadenceforschoolboard@gmail.com',
-          facebook: (data as any).facebook || 'https://www.facebook.com/profile.php?id=61578333433751',
-          instagram: (data as any).instagram || 'https://instagram.com/cadence.collins.cares',
-          tiktok: (data as any).tiktok || 'https://tiktok.com/@cadenceoxoxo',
-          donation: (data as any).donation || 'https://secure.actblue.com/donate/cadence-collins-cares'
+          email: socialLinksData.email || 'cadenceforschoolboard@gmail.com',
+          facebook: socialLinksData.facebook || 'https://www.facebook.com/profile.php?id=61578333433751',
+          instagram: socialLinksData.instagram || 'https://instagram.com/cadence.collins.cares',
+          tiktok: socialLinksData.tiktok || 'https://tiktok.com/@cadenceoxoxo',
+          donation_link: socialLinksData.donation_link || 'https://secure.actblue.com/donate/cadence-collins-cares'
         };
         
         saveData = {
-          title: data.title,
+          title: 'Social Links',
           content: JSON.stringify(socialData)
         };
       } else {
@@ -255,19 +270,21 @@ export default function AdminContentPage({}: AdminContentPageProps) {
               >
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   <div className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Title
-                      </label>
-                      <input
-                        {...register('title', { required: 'Title is required' })}
-                        type="text"
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#87ceeb] focus:border-transparent"
-                      />
-                      {errors.title && (
-                        <p className="mt-1 text-sm text-red-600">{errors.title.message}</p>
-                      )}
-                    </div>
+                    {section.key !== 'social_links' && (
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Title
+                        </label>
+                        <input
+                          {...(register as any)('title', { required: 'Title is required' })}
+                          type="text"
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#87ceeb] focus:border-transparent"
+                        />
+                        {(errors as any).title && (
+                          <p className="mt-1 text-sm text-red-600">{(errors as any).title.message}</p>
+                        )}
+                      </div>
+                    )}
 
                     {section.key === 'social_links' ? (
                       // Custom form fields for social links
@@ -287,7 +304,7 @@ export default function AdminContentPage({}: AdminContentPageProps) {
                                   Email Address
                                 </label>
                                 <input
-                                  {...register('email')}
+                                  {...(register as any)('email')}
                                   type="email"
                                   defaultValue={socialData.email || 'cadenceforschoolboard@gmail.com'}
                                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#87ceeb] focus:border-transparent"
@@ -300,7 +317,7 @@ export default function AdminContentPage({}: AdminContentPageProps) {
                                   Facebook URL
                                 </label>
                                 <input
-                                  {...register('facebook')}
+                                  {...(register as any)('facebook')}
                                   type="url"
                                   defaultValue={socialData.facebook || 'https://www.facebook.com/profile.php?id=61578333433751'}
                                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#87ceeb] focus:border-transparent"
@@ -313,7 +330,7 @@ export default function AdminContentPage({}: AdminContentPageProps) {
                                   Instagram URL
                                 </label>
                                 <input
-                                  {...register('instagram')}
+                                  {...(register as any)('instagram')}
                                   type="url"
                                   defaultValue={socialData.instagram || 'https://instagram.com/cadence.collins.cares'}
                                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#87ceeb] focus:border-transparent"
@@ -326,7 +343,7 @@ export default function AdminContentPage({}: AdminContentPageProps) {
                                   TikTok URL
                                 </label>
                                 <input
-                                  {...register('tiktok')}
+                                  {...(register as any)('tiktok')}
                                   type="url"
                                   defaultValue={socialData.tiktok || 'https://tiktok.com/@cadenceoxoxo'}
                                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#87ceeb] focus:border-transparent"
@@ -339,9 +356,9 @@ export default function AdminContentPage({}: AdminContentPageProps) {
                                   Donation URL (ActBlue)
                                 </label>
                                 <input
-                                  {...register('donation')}
+                                  {...(register as any)('donation_link')}
                                   type="url"
-                                  defaultValue={socialData.donation || 'https://secure.actblue.com/donate/cadence-collins-cares'}
+                                  defaultValue={socialData.donation_link || 'https://secure.actblue.com/donate/cadence-collins-cares'}
                                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#87ceeb] focus:border-transparent"
                                   placeholder="https://secure.actblue.com/donate/..."
                                 />
@@ -362,7 +379,7 @@ export default function AdminContentPage({}: AdminContentPageProps) {
                           )}
                         </label>
                         <textarea
-                          {...register('content', { required: 'Content is required' })}
+                          {...(register as any)('content', { required: 'Content is required' })}
                           rows={section.key === 'policy' ? 12 : 8}
                           className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#87ceeb] focus:border-transparent"
                           placeholder={
@@ -371,8 +388,8 @@ export default function AdminContentPage({}: AdminContentPageProps) {
                               : `Enter ${section.title.toLowerCase()} content here...`
                           }
                         />
-                        {errors.content && (
-                          <p className="mt-1 text-sm text-red-600">{errors.content.message}</p>
+                        {(errors as any).content && (
+                          <p className="mt-1 text-sm text-red-600">{(errors as any).content.message}</p>
                         )}
                       </div>
                     )}

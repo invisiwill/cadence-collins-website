@@ -19,7 +19,7 @@ export interface CampaignEvent {
 
 export interface ContentBlock {
   id: string;
-  section_key: 'bio' | 'policy' | 'contact' | 'hero_intro';
+  section_key: 'bio' | 'policy' | 'contact' | 'hero_intro' | 'social_links';
   title: string;
   content: string;
   photo_data?: string; // Legacy field for backward compatibility
@@ -37,6 +37,7 @@ export interface ContentBlock {
     };
     processedAt: string;
   };
+  created_at: string;
   updated_at: string;
 }
 
@@ -70,6 +71,14 @@ export interface ContentForm {
   content: string;
   photo_data?: string;
   photo_alt?: string;
+}
+
+export interface SocialLinksForm {
+  email: string;
+  facebook: string;
+  instagram: string;
+  tiktok: string;
+  donation_link: string;
 }
 
 // API Response interfaces

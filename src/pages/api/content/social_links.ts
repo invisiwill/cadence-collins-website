@@ -25,11 +25,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
               tiktok: 'https://tiktok.com/@cadenceoxoxo',
               donation: 'https://secure.actblue.com/donate/cadence-collins-cares'
             }),
-            photo_large: null,
-            photo_medium: null,
-            photo_small: null,
-            photo_metadata: null,
-            photo_alt: null,
+            photo_large: undefined,
+            photo_medium: undefined,
+            photo_small: undefined,
+            photo_metadata: undefined,
+            photo_alt: undefined,
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString()
           };
