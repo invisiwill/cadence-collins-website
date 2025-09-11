@@ -15,7 +15,7 @@ export function Header({ className = '' }: HeaderProps) {
             </Link>
           </div>
           <nav className="hidden md:flex space-x-8">
-            <a href="#about" className="text-campaign-600 hover:text-accent-500 transition-colors">
+            <a href="#bio" className="text-campaign-600 hover:text-accent-500 transition-colors">
               About
             </a>
             <a href="#events" className="text-campaign-600 hover:text-accent-500 transition-colors">
