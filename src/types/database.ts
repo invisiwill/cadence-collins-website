@@ -19,8 +19,9 @@ export interface CampaignEvent {
 
 export interface ContentBlock {
   id: string;
-  section_key: 'bio' | 'policy' | 'contact' | 'hero_intro' | 'social_links';
+  section_key: 'bio' | 'policy' | 'contact' | 'hero_intro' | 'social_links' | 'footer_left' | 'footer_signature';
   title: string;
+  subtitle?: string;
   content: string;
   photo_data?: string; // Legacy field for backward compatibility
   photo_large?: string;

@@ -10,21 +10,39 @@ interface FooterProps {
 
 export function Footer({ className = '' }: FooterProps) {
   const [contactContent, setContactContent] = useState<ContentBlock | null>(null);
+  const [footerLeftContent, setFooterLeftContent] = useState<ContentBlock | null>(null);
+  const [footerSignature, setFooterSignature] = useState<ContentBlock | null>(null);
 
   useEffect(() => {
-    async function fetchContactContent() {
+    async function fetchFooterContent() {
       try {
-        const response = await fetch('/api/content/contact');
-        if (response.ok) {
-          const data = await response.json();
+        // Fetch all footer content in parallel
+        const [contactRes, footerLeftRes, signatureRes] = await Promise.all([
+          fetch('/api/content/contact'),
+          fetch('/api/content/footer_left'),
+          fetch('/api/content/footer_signature')
+        ]);
+
+        if (contactRes.ok) {
+          const data = await contactRes.json();
           setContactContent(data);
         }
+
+        if (footerLeftRes.ok) {
+          const data = await footerLeftRes.json();
+          setFooterLeftContent(data);
+        }
+
+        if (signatureRes.ok) {
+          const data = await signatureRes.json();
+          setFooterSignature(data);
+        }
       } catch (err) {
-        console.error('Failed to load contact content:', err);
+        console.error('Failed to load footer content:', err);
       }
     }
 
-    fetchContactContent();
+    fetchFooterContent();
   }, []);
 
   return (
@@ -33,12 +51,16 @@ export function Footer({ className = '' }: FooterProps) {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* Campaign Info */}
           <div>
-            <h3 className="text-xl font-bold mb-4">Cadence Collins</h3>
-            <p className="text-campaign-100 mb-4">
-              For School Board
-            </p>
+            <h3 className="text-xl font-bold mb-4">
+              {footerLeftContent?.title || 'Cadence Collins'}
+            </h3>
+            {footerLeftContent?.subtitle && (
+              <p className="text-campaign-100 mb-4">
+                {footerLeftContent.subtitle}
+              </p>
+            )}
             <p className="text-campaign-200 text-sm">
-              Building stronger schools for our community.
+              {footerLeftContent?.content || 'Building stronger schools for our community.'}
             </p>
           </div>
 
@@ -65,8 +87,18 @@ export function Footer({ className = '' }: FooterProps) {
 
         <div className="border-t border-campaign-700 mt-8 pt-8 text-center text-campaign-200 text-sm">
           <p>
-            &copy; {new Date().getFullYear()} Cadence Collins for School Board. 
-            Paid for by Friends of Cadence Collins.
+            {footerSignature?.content || `© ${new Date().getFullYear()} Cadence Collins for School Board. Paid for by Friends of Cadence Collins.`}
+          </p>
+          <p className="mt-4">
+            Website Designed & Built by{' '}
+            <a
+              href="https://thefavrs.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-campaign-100 hover:text-white transition-colors underline"
+            >
+              TheFavrs.com
+            </a>
           </p>
         </div>
       </div>

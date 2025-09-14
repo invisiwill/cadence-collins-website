@@ -40,7 +40,7 @@ export function EventsList({ className = '' }: EventsListProps) {
       month: 'long',
       day: 'numeric',
       hour: 'numeric',
-      minute: '2-digit',
+      minute: '2-digit'
     });
   };
 

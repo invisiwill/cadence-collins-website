@@ -61,10 +61,10 @@ export function Hero({ className = '' }: HeroProps) {
           {/* Content */}
           <div className="lg:w-2/3 text-center lg:text-left">
             <h1 className="text-4xl md:text-6xl font-bold mb-6">
-              Cadence Collins
+              {heroContent?.title || 'Cadence Collins'}
             </h1>
             <h2 className="text-xl md:text-2xl mb-8 text-white">
-              For School Board
+              {heroContent?.subtitle || 'For School Board'}
             </h2>
             {loading ? (
               <div className="animate-pulse">

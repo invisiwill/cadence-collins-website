@@ -4,7 +4,8 @@ import { verifyToken } from '@/lib/auth';
 import { z } from 'zod';
 
 const contentSchema = z.object({
-  title: z.string().min(1, 'Title is required'),
+  title: z.string().optional(), // Made optional for footer_signature
+  subtitle: z.string().optional(),
   content: z.string().min(1, 'Content is required'),
   photo_large: z.string().nullable().optional(),
   photo_medium: z.string().nullable().optional(),
@@ -22,7 +23,7 @@ const contentSchema = z.object({
   }).nullable().optional()
 });
 
-const validSections = ['hero_intro', 'bio', 'policy', 'contact'];
+const validSections = ['hero_intro', 'bio', 'policy', 'contact', 'footer_left', 'footer_signature'];
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'PUT') {
@@ -98,6 +99,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       .from('content_blocks')
       .update({
         title: updateData.title,
+        subtitle: updateData.subtitle,
         content: updateData.content,
         photo_large: updateData.photo_large,
         photo_medium: updateData.photo_medium,

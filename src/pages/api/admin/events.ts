@@ -81,7 +81,7 @@ async function handleCreateEvent(req: NextApiRequest, res: NextApiResponse) {
       .insert({
         title,
         description,
-        date,
+        date: new Date(date).toISOString(), // Convert to proper ISO format
         location,
         is_published,
         created_at: new Date().toISOString(),
@@ -122,7 +122,7 @@ async function handleUpdateEvent(req: NextApiRequest, res: NextApiResponse) {
     const updateData: any = { updated_at: new Date().toISOString() };
     if (title !== undefined) updateData.title = title;
     if (description !== undefined) updateData.description = description;
-    if (date !== undefined) updateData.date = date;
+    if (date !== undefined) updateData.date = new Date(date).toISOString(); // Convert to proper ISO format
     if (location !== undefined) updateData.location = location;
     if (is_published !== undefined) updateData.is_published = is_published;
 

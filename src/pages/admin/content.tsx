@@ -19,8 +19,10 @@ export default function AdminContentPage({}: AdminContentPageProps) {
     { key: 'hero_intro', title: 'Hero Section', description: 'Main hero message and photo' },
     { key: 'bio', title: 'Biography', description: 'About Cadence Collins section' },
     { key: 'policy', title: 'Policy', description: 'Policy priorities and positions' },
-    { key: 'contact', title: 'Contact', description: 'Contact information and call-to-action' },
+    { key: 'contact', title: 'Contact Footer', description: 'Footer contact information (Get in Touch section)' },
     { key: 'social_links', title: 'Social Links', description: 'Social media and donation links' },
+    { key: 'footer_left', title: 'Footer Left Content', description: 'Left side of footer with title and description' },
+    { key: 'footer_signature', title: 'Footer Signature', description: 'Copyright and paid for disclaimer at bottom' },
   ];
 
   const {
@@ -60,6 +62,22 @@ export default function AdminContentPage({}: AdminContentPageProps) {
     formState: { errors: errorsSocialLinks },
   } = useForm<SocialLinksForm>();
 
+  const {
+    register: registerFooterLeft,
+    handleSubmit: handleSubmitFooterLeft,
+    setValue: setValueFooterLeft,
+    reset: resetFooterLeft,
+    formState: { errors: errorsFooterLeft },
+  } = useForm<ContentForm>();
+
+  const {
+    register: registerFooterSignature,
+    handleSubmit: handleSubmitFooterSignature,
+    setValue: setValueFooterSignature,
+    reset: resetFooterSignature,
+    formState: { errors: errorsFooterSignature },
+  } = useForm<ContentForm>();
+
   useEffect(() => {
     fetchAllContent();
   }, []);
@@ -72,6 +90,8 @@ export default function AdminContentPage({}: AdminContentPageProps) {
         fetch('/api/content/policy'),
         fetch('/api/content/contact'),
         fetch('/api/content/social_links'),
+        fetch('/api/content/footer_left'),
+        fetch('/api/content/footer_signature'),
       ]);
 
       const contentData: Record<string, ContentBlock> = {};
@@ -120,6 +140,17 @@ export default function AdminContentPage({}: AdminContentPageProps) {
               setValueSocialLinks('tiktok', 'https://tiktok.com/@cadenceoxoxo');
               setValueSocialLinks('donation_link', 'https://secure.actblue.com/donate/cadence-collins-cares');
             }
+          } else if (section === 'footer_left') {
+            resetFooterLeft({
+              title: data.title || 'Cadence Collins',
+              subtitle: data.subtitle || 'For School Board',
+              content: data.content || 'Building stronger schools for our community'
+            });
+          } else if (section === 'footer_signature') {
+            resetFooterSignature({
+              title: data.title || '',
+              content: data.content || '© 2025 Cadence Collins for School Board. Paid for by Friends of Cadence Collins.'
+            });
           }
         }
       }
@@ -208,6 +239,10 @@ export default function AdminContentPage({}: AdminContentPageProps) {
         return { register: registerContact, handleSubmit: handleSubmitContact, errors: errorsContact };
       case 'social_links':
         return { register: registerSocialLinks, handleSubmit: handleSubmitSocialLinks, errors: errorsSocialLinks };
+      case 'footer_left':
+        return { register: registerFooterLeft, handleSubmit: handleSubmitFooterLeft, errors: errorsFooterLeft };
+      case 'footer_signature':
+        return { register: registerFooterSignature, handleSubmit: handleSubmitFooterSignature, errors: errorsFooterSignature };
       default:
         return { register: registerBio, handleSubmit: handleSubmitBio, errors: errorsBio };
     }
@@ -270,20 +305,36 @@ export default function AdminContentPage({}: AdminContentPageProps) {
               >
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   <div className="space-y-4">
-                    {section.key !== 'social_links' && (
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Title
-                        </label>
-                        <input
-                          {...(register as any)('title', { required: 'Title is required' })}
-                          type="text"
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#87ceeb] focus:border-transparent"
-                        />
-                        {(errors as any).title && (
-                          <p className="mt-1 text-sm text-red-600">{(errors as any).title.message}</p>
+                    {section.key !== 'social_links' && section.key !== 'footer_signature' && (
+                      <>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Title
+                          </label>
+                          <input
+                            {...(register as any)('title', { required: 'Title is required' })}
+                            type="text"
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#87ceeb] focus:border-transparent"
+                          />
+                          {(errors as any).title && (
+                            <p className="mt-1 text-sm text-red-600">{(errors as any).title.message}</p>
+                          )}
+                        </div>
+
+                        {(section.key === 'hero_intro' || section.key === 'footer_left') && (
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                              Subtitle
+                            </label>
+                            <input
+                              {...(register as any)('subtitle')}
+                              type="text"
+                              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#87ceeb] focus:border-transparent"
+                              placeholder={section.key === 'hero_intro' ? "For School Board" : "Tagline or subtitle"}
+                            />
+                          </div>
                         )}
-                      </div>
+                      </>
                     )}
 
                     {section.key === 'social_links' ? (
@@ -371,7 +422,7 @@ export default function AdminContentPage({}: AdminContentPageProps) {
                       // Regular content textarea for other sections
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Content
+                          {section.key === 'footer_signature' ? 'Footer Text' : 'Content'}
                           {section.key === 'policy' && (
                             <span className="text-gray-500 text-xs ml-1">
                               (Use • for bullet points)

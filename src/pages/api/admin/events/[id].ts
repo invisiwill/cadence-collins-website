@@ -76,12 +76,22 @@ async function handleUpdateEvent(req: NextApiRequest, res: NextApiResponse, id: 
   try {
     const { title, description, date, location, is_published } = req.body;
 
+    console.log('Update request body:', req.body);
+    console.log('Date received:', date);
+
     const updateData: any = { updated_at: new Date().toISOString() };
     if (title !== undefined) updateData.title = title;
     if (description !== undefined) updateData.description = description;
-    if (date !== undefined) updateData.date = date;
+    if (date !== undefined) {
+      // Convert the datetime-local string to a proper ISO date with timezone
+      // datetime-local gives us "2025-10-19T14:00" which needs to be converted to ISO format
+      const properDate = new Date(date).toISOString();
+      updateData.date = properDate;
+    }
     if (location !== undefined) updateData.location = location;
     if (is_published !== undefined) updateData.is_published = is_published;
+
+    console.log('Update data being sent to database:', updateData);
 
     const { data, error } = await supabase
       .from('campaign_events')

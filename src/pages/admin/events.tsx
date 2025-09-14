@@ -50,6 +50,15 @@ export default function AdminEventsPage({}: AdminEventsPageProps) {
 
   const onSubmit = async (data: EventForm) => {
     try {
+      // Simply use the datetime-local value as-is - no timezone conversion
+      const requestData = {
+        ...data,
+        ...(editingEvent && { id: editingEvent.id })
+      };
+
+      console.log('Submitting event data:', requestData);
+      console.log('Date being sent:', data.date);
+
       const url = editingEvent ? `/api/admin/events/${editingEvent.id}` : '/api/admin/events';
       const method = editingEvent ? 'PUT' : 'POST';
 
@@ -59,7 +68,7 @@ export default function AdminEventsPage({}: AdminEventsPageProps) {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('admin_token') || 'demo-admin-token'}`
         },
-        body: JSON.stringify(data)
+        body: JSON.stringify(requestData)
       });
 
       if (response.ok) {
@@ -84,7 +93,13 @@ export default function AdminEventsPage({}: AdminEventsPageProps) {
     setEditingEvent(event);
     setValue('title', event.title);
     setValue('description', event.description);
-    setValue('date', event.date.slice(0, 16)); // Format for datetime-local
+
+    // For datetime-local input, we need to format the date in local timezone
+    // Convert the stored date to local time for the input
+    const date = new Date(event.date);
+    const localDatetimeString = new Date(date.getTime() - (date.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
+
+    setValue('date', localDatetimeString);
     setValue('location', event.location);
     setValue('is_published', event.is_published);
     setIsModalOpen(true);
