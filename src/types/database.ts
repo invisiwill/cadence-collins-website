@@ -75,6 +75,7 @@ export interface EventForm {
 
 export interface ContentForm {
   title: string;
+  subtitle?: string;
   content: string;
   photo_data?: string;
   photo_alt?: string;
